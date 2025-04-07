@@ -1,5 +1,5 @@
 ---
-title: "Practice Activity: Layering in ggPlot"
+title: "Practice Activity: Layering in ggplot"
 format: html
 editor: visual
 ---

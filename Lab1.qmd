@@ -2,13 +2,16 @@
 title: "Lab1"
 format: html
 editor: visual
+warnings: false
 ---
 
 ## Lab 1: **Quarto Warmup & STAT 331 Review**
 
-```{r}
+```{r libraries}
 library(tidyverse)
 library(ggridges)
+library(ggplot2)
+library(lubridate)
 ```
 
 ## Quarto
@@ -25,7 +28,8 @@ library(ggridges)
 
 -   Potatoes
 
-```{r}
+```{r plot but no code}
+#| echo: false
 ggplot(data = mpg, 
        mapping = aes(y = manufacturer, x = hwy)) + 
   geom_boxplot() +
@@ -35,7 +39,8 @@ ggplot(data = mpg,
        )
 ```
 
-```{r}
+```{r plot no message}
+#| message: false
 ggplot(data = mpg, 
        mapping = aes(y = manufacturer, x = hwy)) + 
   geom_density_ridges() +
@@ -44,3 +49,77 @@ ggplot(data = mpg,
        title = "Highway Milage (mpg) for Different Car Manufacturers"
        )
 ```
+
+```{r plots side by side}
+#| layout-ncol: 2
+
+ggplot(data = mpg, 
+       mapping = aes(y = manufacturer, x = hwy)) + 
+  geom_boxplot() +
+  labs(x = "",
+       y = "", 
+       title = "Highway Milage (mpg) for Different Car Manufacturers"
+       )
+
+ggplot(data = mpg, 
+       mapping = aes(y = manufacturer, x = hwy)) + 
+  geom_density_ridges() +
+  labs(x = "",
+       y = "", 
+       title = "Highway Milage (mpg) for Different Car Manufacturers"
+       )
+```
+
+```{r only code no output, echo=TRUE, results='hide'}
+2 + 2
+```
+
+```{r error ignored, error = TRUE}
+2 + a
+```
+
+## **Data Wrangling Review**
+
+```{r 11}
+#head(mpg)
+# p = premium, d = diesel, e = ethanol(e85), r = regular, c = cng(natural gas, fossil fuel)
+# source: https://stackoverflow.com/questions/25548656/ggplot2s-mpg-dataset-whats-the-fl-variable
+
+mpg_fuel <- mpg |> 
+  mutate(fuel_category = if_else(fl %in% c('p', 'd', 'r'), "petrol", "alternative_energy"))
+head(mpg_fuel)
+```
+
+```{r 12}
+
+mpg_fuel <- mpg_fuel |> mutate(drv = case_when( drv =="r" ~ "rear drive",
+                                      drv  == "f" ~ "front drive",
+                                      drv == "4" ~ "four-wheel drive", 
+                                      .default = as.character(drv)))
+head(mpg_fuel)
+```
+
+```{r 13}
+mpg_fuel <- mpg_fuel |> mutate(trans_specific = str_split_i(trans, "\\(", 2), trans_specific = str_remove(trans_specific, "\\)"), trans = str_split_i(trans, "\\(", 1))
+rename(mpg_fuel, trans_style = trans)
+```
+
+## Getting to know your classmates
+
+14. Find someone who took Stat 331 from a different professor than you. Compare your experiences. Tell me their name and professor. List one or two things that you think you learned more about, and one or two things that they learned more about.
+
+    Alisa Krasilnikov, Professor Robinson.
+
+    I took Stat 331 with you, Professor Theobold, and Alisa took it with Professor Robinson. I think I learned more about how to work with ggplot themes and how to edit html formatting because I enjoyed doing that, while Alisa learned more about pulling data from the internet and running analyses.
+
+15. Find someone in the class who **does not** share your birth month. Tell me their name and birthday, and use R to find out how many days apart your birthdays are.
+
+    Allen Choi, May 30th.
+
+    ```{r}
+    allen<- mdy("05-30-2003")
+    harshini <- mdy("08-25-2003")
+
+    harshini - allen
+
+    ```
