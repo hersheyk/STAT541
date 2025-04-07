@@ -1,0 +1,46 @@
+---
+title: "Lab1"
+format: html
+editor: visual
+---
+
+## Lab 1: **Quarto Warmup & STAT 331 Review**
+
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+## Quarto
+
+1.  **Make this text bold.**
+
+2.  *Make this text italicized.*
+
+3.  Make these into a bullet point list:
+
+-   Apples
+
+-   Bananas
+
+-   Potatoes
+
+```{r}
+ggplot(data = mpg, 
+       mapping = aes(y = manufacturer, x = hwy)) + 
+  geom_boxplot() +
+  labs(x = "",
+       y = "", 
+       title = "Highway Milage (mpg) for Different Car Manufacturers"
+       )
+```
+
+```{r}
+ggplot(data = mpg, 
+       mapping = aes(y = manufacturer, x = hwy)) + 
+  geom_density_ridges() +
+  labs(x = "",
+       y = "", 
+       title = "Highway Milage (mpg) for Different Car Manufacturers"
+       )
+```
