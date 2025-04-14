@@ -29,29 +29,29 @@ library(dplyr)
 library(ggplot2)
 library(readxl)
 library(ggrepel)
-
 library(scales)
+library(leaflet)
 ```
 
 ## Part 1:
 
-1.  While there are certainly issues with this image, do your best to tell the story of this graph in words. That is, what is this graph telling you? What do you think the authors meant to convey with it?
+1.  **While there are certainly issues with this image, do your best to tell the story of this graph in words. That is, what is this graph telling you? What do you think the authors meant to convey with it?**
 
 I believe this plot is trying to show us the proportion of people in a particular country that believe a vaccine is safe. It shows us one observation per country where the y-axis appears to be country? It also sorted the observations by proportion, so that it appears that the proportions increase as the y-axis goes up.
 
-2.  List the variables that appear to be displayed in this visualization. *Hint: Variables refer to columns in the data.*
+2.  **List the variables that appear to be displayed in this visualization. *Hint: Variables refer to columns in the data.***
 
 The country, the global region of the country and the percentage of people in the country that believe a vaccine is safe.
 
-3.  Now that you’re versed in the grammar of graphics (e.g., `ggplot`), list the *aesthetics* used and which *variables* are mapped to each.
+3.  **Now that you’re versed in the grammar of graphics (e.g., `ggplot`), list the *aesthetics* used and which *variables* are mapped to each.**
 
 The x-axis the percentage of people in the country that believe a vaccine is safe. The y-axis is the country, the color is filled by global region.
 
-4.  What type of graph would you call this? Meaning, what `geom` would you use to produce this plot?
+4.  **What type of graph would you call this? Meaning, what `geom` would you use to produce this plot?**
 
 I would call this a scatter plot and would use geom point to produce it.
 
-5.  Provide at least four problems or changes that would improve this graph. *Please format your changes as bullet points!*
+5.  **Provide at least four problems or changes that would improve this graph. *Please format your changes as bullet points!***
 
 -   I think this is a graph that is faceted by region of the world, but it lends to a strange stacked graph like view that is not very intuitive, and leaves some plots stranded from their axes. I would try faceting differently or trying to remove the facet entirely.
 
@@ -63,11 +63,15 @@ I would call this a scatter plot and would use geom point to produce it.
 
 ## **Improving the Bad Visualization**
 
-6.  Improve the visualization above by either re-creating it with the issues you identified fixed OR by creating a new visualization that you believe tells the same story better.
+6.  **Improve the visualization above by either re-creating it with the issues you identified fixed OR by creating a new visualization that you believe tells the same story better.**
 
 ```{r}
 data<-read_excel("C:\\Users\\Geetha\\Downloads\\wgm2018-dataset-crosstabs-all-countries.xlsx")
 head(data)
+```
+
+```{r}
+View(data)
 ```
 
 ```{r}
@@ -170,7 +174,91 @@ ggplot(national1, aes(x = Region,y=Agree_Percent,fill = Region))+
 
 ## **Second Data Visualization Improvement**
 
-```{r}
+7.  **Select a data visualization in the report that you think could be improved. Be sure to cite both the page number and figure title. Do your best to tell the story of this graph in words. That is, what is this graph telling you? What do you think the authors meant to convey with it?**
 
+Chart 5.7: Map of proportions of people reporting vaccinating their children on page 121. This graph is telling us what percentage of the people in a particular country say their children have been vaccinated. It compares between countries, highlightng where this percentage is particularly high or low.
+
+8.  **List the variables that appear to be displayed in this visualization.**
+
+Percentage of people who answered ‘yes’ to their children having received vaccines and Country,
+
+9.  **Now that you’re versed in the grammar of graphics (ggplot), list the aesthetics used and which variables are specified for each.**
+
+The map shows the variable country, the color is filled by the percentage of people who answered 'yes'.
+
+10. **What type of graph would you call this?**
+
+I would call this a chloropleth map!
+
+#Source: <https://support.esri.com/en-us/gis-dictionary/choropleth-map#:~:text=From%20the%20Greek%20terms%20choro,combining%20different%20sets%20of%20symbols.>
+
+11. **List all of the problems or things you would improve about this graph.**
+
+-   I would make the color scaling more distinct and more apparent as it is difficult to visibly see the percentage or people who said their children had been vaccinated.
+
+-   I might add in global region to see if that shows any distinctions.
+
+-   I would make the countries that were not surveyed a more ditinct color from the background color as it is hard to notice island nations and the like.
+
+12. **Improve the visualization above by either re-creating it with the issues you identified fixed OR by creating a new visualization that you believe tells the same story better.**
+
+```{r}
+national2 <- national |>
+  fill(QNumber, .direction = "down") |>
+  #Source for .direction: https://tidyr.tidyverse.org/reference/fill.html
+  filter(QNumber == "Q28")|> filter(Response == "Yes") |> mutate(Region = case_when(
+    
+    Country %in% asia ~ "Asia",
+    Country %in% mena ~ "Middle East and North Africa",
+    Country %in% americas ~ "Americas",
+     Country %in% sub_sahara ~ "Sub-Saharan Africa",
+    Country %in% europe ~ "Europe",
+    
+    Country %in% former_soviet ~ "Former Soviet Union",
+    
+    Country %in% oceania ~ "Oceania",
+    
+    TRUE ~ "Other" #used to check, there are none that fall in this category
+  ))
+head(national2)
+```
+
+```{r}
+library(rnaturalearth)
+library(sf)
+library(rnaturalearthdata)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+world$Country <- tolower(world$name_long)
+national2$Country <- tolower(national2$Country)
+
+world_data <- left_join(world, national2, by = c("Country" = "Country"))
+world_data$National_Results_Col_Per <- as.numeric(world_data$National_Results_Col_Per)
+```
+
+```{r}
+pal <- colorBin(
+  palette = "YlGnBu",
+  domain = world_data$National_Results_Col_Per,
+  bins = c(0, 0.70, 0.80, 0.90, 0.95, 1.00),
+  na.color = "#d3d3d3"  
+)
+
+leaflet(world_data) |> addTiles() |>
+  addPolygons(
+    fillColor = ~pal(National_Results_Col_Per), weight = 1,
+    color = "white", fillOpacity = 0.8,
+    label = ~paste0(Country, ": ", National_Results_Col_Per, "%"),
+    highlight = highlightOptions(
+      weight = 2, color = "#666",
+      fillOpacity = 0.9, bringToFront = TRUE
+    )
+    #Source: https://r-charts.com/spatial/interactive-maps-leaflet/
+  ) |>
+  
+  addLegend(
+    pal = pal, values = ~National_Results_Col_Per,
+    title = "Proportions of people", position = "bottomright"
+  ) 
 
 ```
