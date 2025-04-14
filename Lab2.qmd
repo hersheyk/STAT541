@@ -238,10 +238,9 @@ world_data$National_Results_Col_Per <- as.numeric(world_data$National_Results_Co
 
 ```{r}
 pal <- colorBin(
-  palette = "YlGnBu",
+  palette ="YlGnBu",
   domain = world_data$National_Results_Col_Per,
-  bins = c(0, 0.70, 0.80, 0.90, 0.95, 1.00),
-  na.color = "#d3d3d3"  
+  bins = c(0, 0.70, 0.80, 0.90, 0.95, 1.00), na.color ="#d3d3d3"  
 )
 
 leaflet(world_data) |> addTiles() |>
@@ -260,5 +259,53 @@ leaflet(world_data) |> addTiles() |>
     pal = pal, values = ~National_Results_Col_Per,
     title = "Proportions of people", position = "bottomright"
   ) 
+
+```
+
+## **Third Data Visualization Improvement**
+
+```{r}
+
+national3 <- data[c('...1', '...2', '...3',
+                    'National results','...5',
+                    'Gender','...7', '...8', '...9',
+                    'Age Cohort', '...11', '...12',
+                    '...13', '...14', '...15',
+                    'General Educational Background', 
+                    '...17', '...18', '...19', 
+                    '...20', '...21', 'Area Type', 
+                    '...23', '...24', '...25')]
+
+colnames(national) <- c("Country", "Question", "Response",
+                        "National_Results_Col_Per", "National_Results_Count",
+                        "Man_Per", "Man_num", "Woman_Per", "Woman_num",
+                        "15-29_Per", "15-29_Num", "15-29_Per",
+                        "15-29_Per", "15-29_Per", "15-29_Per")
+
+national <- national[!(national$Country %in% c(NA, 'Country')),]
+national$QNumber <- str_split_i(national$Question, " ", 1)
+
+national1 <- national |> filter(Country == 'France') |>
+  fill(QNumber, .direction = "down") |>
+  #Source for .direction: https://tidyr.tidyverse.org/reference/fill.html
+  filter(QNumber == "Q25") |>
+  filter(Response == "Strongly disagree" | Response == "Somewhat disagree") |> group_by(Country) |>
+  summarize(Agree_Percent = sum(as.numeric(National_Results_Col_Per, )), .groups = "drop") |> mutate(Region = case_when(
+    
+    Country %in% asia ~ "Asia",
+    Country %in% mena ~ "Middle East and North Africa",
+    Country %in% americas ~ "Americas",
+     Country %in% sub_sahara ~ "Sub-Saharan Africa",
+    Country %in% europe ~ "Europe",
+    
+    Country %in% former_soviet ~ "Former Soviet Union",
+    
+    Country %in% oceania ~ "Oceania",
+    
+    TRUE ~ "Other" #used to check, there are none that fall in this category
+  ))
+  #summarize function : https://stackoverflow.com/questions/62891736/sum-sub-groups-with-dplyr
+
+
 
 ```
