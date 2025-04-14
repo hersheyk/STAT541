@@ -2,15 +2,10 @@
 title: "Practice Activity: Layering in ggplot"
 format: html
 editor: visual
+embed-resources: true
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## Original Plot
 
 ```{r libraries}
 library(dslabs)
@@ -44,4 +39,31 @@ dat %>% mutate(state = reorder(state, desc(state))) %>%
         annotate(geom = "text", x = 1963, y = 50.5, label = "Vaccine introduced", size = 3, hjust = -0.04)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+## Updated Plot
+
+```{r updatd}
+
+jet.colors <- colorRampPalette(c("#dae7ed", "cyan", "#007FFF", "yellow", "#FFBF00", "orange", "red", "#7F0000"), bias = 2.25)
+
+dat %>%
+  mutate(state = reorder(state, desc(state))) %>%
+  ggplot(aes(year, state, fill = rate)) +
+  geom_tile(color = "lightgray", size = 0.35) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_fill_gradientn(colors = jet.colors(16), na.value = "#f5fafc") +
+  geom_vline(xintercept = 1963, color = "black", linewidth = 0.5) +
+  annotate(
+    geom = "text",x = 1963, y = 51,
+    label = "1963: Measles Vaccine Introduced", hjust = -0.05, size = 4, family = "serif", color = "black"
+  ) +
+  labs(
+    title = "Measles Prevalence in U.S. States (1928–2011)", fill = "Rate per 10,000"
+  ) + theme_minimal(base_family = "serif") +
+  theme(
+    panel.grid = element_blank(), axis.title = element_blank(), legend.position = "bottom", plot.title = element_text(size = 14, face = "bold", color = "black"), 
+    panel.background = element_rect(fill = "lightgray", color = "lightgray"),
+    plot.background = element_rect(fill = "lightgray", color = "lightgray")
+  ) 
+# Backgraound color code: https://www.sthda.com/english/wiki/ggplot2-themes-and-background-colors-the-3-elements
+
+```

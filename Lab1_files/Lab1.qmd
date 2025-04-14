@@ -3,6 +3,7 @@ title: "Lab1"
 format: html
 editor: visual
 warnings: false
+embed-resources: true
 ---
 
 ## Lab 1: **Quarto Warmup & STAT 331 Review**
