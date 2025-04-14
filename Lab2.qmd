@@ -1,8 +1,23 @@
 ---
 title: "Lab2"
+author: "Harshini Karthikeyan"
+date: 'April 10th 2025'
 format: html
-editor: visual
+output:
+  html_document:
+    number_sections: yes
 
+    code-fold: true
+    code-summary: "Show code"
+    backgroundcolor: whitesmoke
+    monobackgroundcolor: lightsteelblue
+    fontcolor: steelblue
+    embed-resources: true
+  pdf_document: default
+mainfont: "Times New Roman"
+editor: visual
+toc: true
+toc_float: true
 embed-resources: true
 ---
 
@@ -132,57 +147,30 @@ outliers <- national1|>
 ```
 
 ```{r}
-ggplot(national1, aes(x = Region, y = Agree_Percent, fill = Region)) +
-  geom_boxplot(outlier.shape = 16, outlier.size = 2, alpha = 0.7) +
-  labs(
-    title = "The Percentage of People Who Believe Vaccines are Safe by Global Region",
-    x = "Region",
-    y = " "
-  ) + 
-  scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  theme_minimal(base_family = "serif") +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1 ),
-    legend.position = "none" +
-  geom_text()
-  )
 
-
-```
-
-```{r}
-
-
-# Step 2: Plot with outlier labels
-ggplot(national1, aes(x = Region, y = Agree_Percent, fill = Region)) +
-  geom_boxplot(outlier.shape = NA, alpha = 0.7) +  # hide default outliers
-  geom_point(data = outliers, aes(x = Region, y = Agree_Percent), shape = 16, size =3, color = "black") +
+ggplot(national1, aes(x = Region,y=Agree_Percent,fill = Region))+
+  geom_boxplot(outlier.shape= NA,alpha = 0.7) +  
+  geom_point(data = outliers, aes(x =Region, y= Agree_Percent), shape =16, size =3, color = "black") +
   geom_text(
-    data = outliers_df,
-    aes(label = Country),
-    vjust = 0.25,
-    hjust = -0.25,
-    size = 5,
-    family = "serif"
-  ) +
-  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+    data =outliers,
+    aes(label= Country), vjust =0.25, hjust=-0.25,  size = 4, family="serif"
+  )+ scale_y_continuous(labels = percent_format(accuracy = 1)) +
   labs(
     title = "The Percentage of People Who Believe Vaccines are Safe by Global Region",
-    x = "Region",
-    y = NULL, size = 5, color = "black"
-  ) +
-  theme_minimal(base_family = "serif") +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  )
+    x= "Region",y= NULL,
+  ) +theme_minimal(base_family = "serif")+
+  
+  theme(axis.text.x = element_text(angle = 20, hjust = 0.75), axis.text = element_text(size = 10,color = "black"), legend.position = "none"
+        )
 
 
 ```
+
+# **Part Two: Broad Visualization Improvement**
+
+## **Second Data Visualization Improvement**
 
 ```{r}
-#| echo: false
+
 
 ```
-
-The `echo: false` option disables the printing of code (only output is displayed).
