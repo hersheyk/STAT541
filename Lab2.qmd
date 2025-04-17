@@ -388,7 +388,10 @@ france_long <- france_all |>
 france_long
 ```
 
+I used ggrepel!
+
 ```{r}
+
 
 
 ggplot(france_long, aes(x = reorder(Category, Percentage), y = Percentage, fill = Category)) + geom_bar(stat = "identity", width = 0.7) + coord_flip() +
@@ -398,6 +401,8 @@ ggplot(france_long, aes(x = reorder(Category, Percentage), y = Percentage, fill 
        x = "",
        y = "") +
   theme_minimal() +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  geom_text_repel(aes(label = round(Percentage, 2)), size = 3, box.padding = 0.3) 
+  
 
 ```
