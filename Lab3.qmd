@@ -338,3 +338,13 @@ list(
   value = toupper(highest_country)
 )
 ```
+
+### Nat 3
+```{r}
+
+national3 |>
+  select(Country, Region, Agree_Percent) |> mutate(Agree_Percent = scales::percent(Agree_Percent, accuracy = 1)) |>
+  arrange(desc(Agree_Percent)) |> head(10) |>
+  kable(col.names = c("Country", "Region", "% Believe Vaccines Are Safe"))
+```
+
