@@ -4,6 +4,7 @@ format: html
 editor: visual
 warnings: false
 embed-resources: true
+toc: true
 ---
 
 ## Lab 1: **Quarto Warmup & STAT 331 Review**

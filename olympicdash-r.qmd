@@ -1,6 +1,8 @@
 ---
 title: "olympicdash-r"
 format: dashboard
+
+embed-resources: true
 ---
 
 ## Dashboard
