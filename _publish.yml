@@ -1,0 +1,4 @@
+- source: Lab3.qmd
+  quarto-pub:
+    - id: d0c4f3de-0f75-4161-b086-82c51d317fd1
+      url: https://hersheythegr8.quarto.pub/lab-3
