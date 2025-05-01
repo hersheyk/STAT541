@@ -15,15 +15,19 @@ format:
       - icon: instagram
         href: https://www.instagram.com/harshini.825/
         aria-label: Instagram
-logo: images/Wellcome_Trust_logo.png
-logo-alt: Logo of Wellcome black with letter 'w' in the middle
 editor: visual
 server: shiny
+logo: images/Wellcome_Trust_logo.png
+logo-alt: Logo of Wellcome black with letter 'w' in the middle
 ---
 
 ```{r libraries}
 #| context: setup
 #| message: false
+
+if (!requireNamespace("rnaturalearthdata", quietly = TRUE)) {
+  install.packages("rnaturalearthdata")
+}
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
@@ -34,6 +38,7 @@ library(leaflet)
 library(knitr)
 library(rnaturalearth)
 library(sf)
+library(kableExtra)
 library(rnaturalearthdata)
 library(shinydashboard)
 
@@ -55,14 +60,10 @@ colnames(national) <- c("Country", "Question", "Response", "National_Results_Col
 national <- national[!(national$Country %in% c(NA, 'Country')),]
 #drop title row since renamed cols alr
 
+national$QNumber <- str_split_i(national$Question, " ", 1)
+#split to get question number
 ```
 
-```{r split to get question number}
-#| context: setup
-#| message: false
-national$QNumber <- str_split_i(national$Question, " ", 1)
-#national
-```
 
 ```{r name global region vectors}
 #| context: setup
@@ -99,10 +100,9 @@ national2 <- national |>
     Country %in% asia ~ "Asia",
     Country %in% mena ~ "Middle East and North Africa",
     Country %in% americas ~ "Americas",
-     Country %in% sub_sahara ~ "Sub-Saharan Africa",
+    Country %in% sub_sahara ~ "Sub-Saharan Africa",
     Country %in% europe ~ "Europe",
     Country %in% former_soviet ~ "Former Soviet Union",
-    
     Country %in% oceania ~ "Oceania",
     
     TRUE ~ "Other" #used to check, there are none that fall in this category
@@ -122,162 +122,7 @@ world_data <- left_join(world, national2, by = c("Country" = "Country"))
 world_data$National_Results_Col_Per <- as.numeric(world_data$National_Results_Col_Per)
 national2$National_Results_Col_Per <- as.numeric(national2$National_Results_Col_Per)
 
-#colorpalette
-pal <- colorBin(
-  palette =c("#ffffd4", "#fec44f", "#fe9929", "#fc4e2a", "#b10026"),
-  #https://loading.io/color/feature/YlOrRd-8
-  domain = world_data$National_Results_Col_Per,
-  bins =c(0, 0.70, 0.80, 0.90, 0.95, 1.00), na.color ="#d3d3d3"  
-)
-
 ```
-# Input Options {.sidebar}
-
-```{r}
-
-# Slider for minimum vaccination rate
-sliderInput("min_vacc", 
-            "Minimum Vaccination Percentage:", 
-            min = 0, max = 100, value = 0, step = 5)
-
-# Checkboxes for region selection
-checkboxGroupInput("selected_regions", 
-                   "Select Regions to Display:", 
-                   choices = unique(national2$Region),
-                   selected = unique(national2$Region))
-
-```
-
-# Children Vaccination Statistics
-
-## Plots {.tabset}
-
-
-### The percentage of vaccinated children by country
-
-```{r}
-#| context: server
-
-# Plot
-leafletOutput('map')
-```
-
-```{r}
-
-plotOutput('boxplot')
-```
-
-```{r}
-
-valueBoxOutput("lowest_country_box")
-```
-
-```{r}
-
-valueBoxOutput("highest_country_box")
-```
-
-
-```{r plot nat2}
-#| context: server
-#title: The percentage of vaccinated children by region
-filtered_data <- reactive({
-  national2 %>%
-    filter(National_Results_Col_Per * 100 >= input$min_vacc,
-           Region %in% input$selected_regions)
-  })
-  
-world_data_reactive <- reactive({
-  world_data %>%
-    filter(Region %in% input$selected_regions,
-           National_Results_Col_Per * 100 >= input$min_vacc)
-  })
-  # World Map
-output$map <- renderLeaflet({
-  leaflet(world_data_reactive()) |> addTiles() |>
-    addPolygons(
-      fillColor = ~pal(National_Results_Col_Per), weight = 1,
-      color = "white", fillOpacity = 0.8,
-      label = ~paste0(Country, ": ", National_Results_Col_Per, "%"),
-      highlight = highlightOptions(
-        weight = 2, color = "#666",
-        fillOpacity = 0.9, bringToFront = TRUE
-      )
-      #Source: https://r-charts.com/spatial/interactive-maps-leaflet/
-    ) |>
-      
-    addLegend(
-      pal = pal, values = ~National_Results_Col_Per,
-      title = "Percentage of people who say  <br> their child has been vaccinated", position = "bottomright"
-        #Source line break: https://www.reddit.com/r/Rlanguage/comments/6bsji1/add_line_break_to_leaflet_pop_up/
-      )
-  })
-  # Box Plot
-output$boxplot <- renderPlot({
-  ggplot(national2, aes(x = Region,y=National_Results_Col_Per,fill = Region))+
-  geom_boxplot(outlier.shape= NA,alpha = 0.7) +  
-  scale_y_continuous(labels = percent_format(accuracy = 1)) +
-  scale_fill_manual(values = c(
-    "Sub-Saharan Africa" = "#581209",
-    "Europe" = "#e31a1c",
-    "Asia" = "#CC5500",
-    "Americas" = "#e88d13",
-    "Middle East and North Africa" = "#e1a612",
-    "Oceania" = "#fb760b",
-    "Former Soviet Union" = "#c34328")) +
-  labs(
-    title = "The Percentage of Vaccinated Children by Global Region",
-    x= "Region",y= NULL,
-  ) +theme_minimal(base_family = "serif")+
-    
-  theme(axis.text.x = element_text(angle = 20, hjust = 0.75), axis.text = element_text(size = 10,color = "black"), legend.position = "none"
-          )
-  })
-lowest_country <- reactive({
-  world_data_reactive() |>
-  filter(National_Results_Col_Per == min(National_Results_Col_Per, na.rm = TRUE)) |>
-    slice(1) |>
-    pull(Country)
-})
-  
-highest_country <- reactive({
-  world_data_reactive() |>
-    filter(National_Results_Col_Per == max(National_Results_Col_Per, na.rm = TRUE)) |>
-    slice(1) |>
-    pull(Country)
-})
-  
-output$lowest_country_box <- renderValueBox({
-  valueBox(
-    value = toupper(lowest_country()),
-    subtitle = "Country with Lowest Percentage of Vaccinated Children",
-    color = "danger"
-    )
-})
-  
-output$highest_country_box <- renderValueBox({
-  valueBox(
-    value = toupper(highest_country()),
-    subtitle = "Country with Highest Percentage of Vaccinated Children",
-    color = "success"
-  )
-})
-
-```
-
-### The percentage of vaccinated children by region
-
-### Table
-
-```{r table}
-#| context: server
-national2 |>
-  select(Country, Region, National_Results_Col_Per) |> mutate(National_Results_Col_Per = scales::percent(National_Results_Col_Per, accuracy = 1)) |>
-  arrange(desc(National_Results_Col_Per)) |> head(10) |>
-  kable(col.names = c("Country", "Region", "% Believe Vaccines Are Safe"))
-```
-
-# Belief in Vaccine Safety Statistics
 
 ```{r nat3}
 #| context: setup
@@ -307,9 +152,210 @@ national3$Country <- tolower(national3$Country)
 world_data2 <- left_join(world, national3, by = c("Country" = "Country"))
 world_data2$National_Results_Col_Per <- as.numeric(world_data$National_Results_Col_Per)
 
+
 ```
 
-## Safety Plots {.tabset}
+# Input Options {.sidebar}
+
+```{r}
+
+# Slider for minimum vaccination rate
+sliderInput("min_vacc", 
+            "Minimum Vaccination Percentage:", 
+            min = 0, max = 100, value = 0, step = 5)
+
+# Checkboxes for region selection
+checkboxGroupInput("selected_regions", 
+                   "Select Regions to Display:", 
+                   choices = unique(national2$Region),
+                   selected = unique(national2$Region))
+
+```
+
+# Children Vaccination Statistics
+
+## Column - Plots {.tabset, width = 70%}}
+
+
+### The percentage of vaccinated children by country
+
+```{r}
+
+# Plot
+leafletOutput('map')
+```
+
+```{r plot nat2}
+#| context: server
+#title: The percentage of vaccinated children by region
+filtered_data <- reactive({
+  national2 %>%
+    filter(National_Results_Col_Per * 100 >= input$min_vacc,
+           Region %in% input$selected_regions)
+  })
+
+#for table on page 1
+filtered_data_2 <- reactive({
+  national2 %>% 
+    select(Country, National_Results_Col_Per, Region) |>
+    filter(National_Results_Col_Per * 100 >= input$min_vacc,
+           Region %in% input$selected_regions) |>
+    rename(`Percentage of children vaccinated` = National_Results_Col_Per) |>
+    mutate(
+    Country = toupper(Country),
+    `Percentage of children vaccinated` = scales::percent(`Percentage of children vaccinated`, accuracy = 1)
+  ) |>
+  arrange(desc(`Percentage of children vaccinated`)) 
+  })
+
+#for the table page 2
+filtered_data_3 <- reactive({
+  national3 %>%
+    rename(`Percentage of people who believe in vaccine safety` = Agree_Percent) %>%
+    filter(Region %in% input$selected_regions) %>%
+    mutate(Country = toupper(Country)) %>%
+    arrange(desc(`Percentage of people who believe in vaccine safety`))
+})
+
+world_data$Country <-toupper(world_data$Country)
+world_data_reactive <- reactive({
+  world_data %>%
+    filter(Region %in% input$selected_regions,
+           National_Results_Col_Per * 100 >= input$min_vacc)
+  })
+
+world_data_reactive_2 <- reactive({
+  world_data_2 %>%
+    filter(Region %in% input$selected_regions)
+  })
+
+  # World Map
+output$map <- renderLeaflet({
+  pal <- colorBin(
+  palette =c("#ffffd4", "#fec44f", "#fe9929", "#fc4e2a", "#b10026"),
+  #https://loading.io/color/feature/YlOrRd-8
+  domain = world_data$National_Results_Col_Per,
+  bins =c(0, 0.70, 0.80, 0.90, 0.95, 1.00), na.color ="#d3d3d3"  
+)
+
+  leaflet(world_data_reactive()) |> addTiles() |>
+    addPolygons(
+      fillColor = ~pal(National_Results_Col_Per), weight = 1,
+      color = "white", fillOpacity = 0.8,
+      label = ~paste0(Country, ": ", National_Results_Col_Per, "%"),
+      highlight = highlightOptions(
+        weight = 2, color = "#666",
+        fillOpacity = 0.9, bringToFront = TRUE
+      )
+      #Source: https://r-charts.com/spatial/interactive-maps-leaflet/
+    ) |>
+      
+    addLegend(
+      pal = pal, values = ~National_Results_Col_Per,
+      title = "Percentage of people who say  <br> their child has been vaccinated", position = "bottomright"
+        #Source line break: https://www.reddit.com/r/Rlanguage/comments/6bsji1/add_line_break_to_leaflet_pop_up/
+      )
+  })
+  # Box Plot
+output$boxplot <- renderPlot({
+  ggplot(filtered_data(), aes(x = Region,y=National_Results_Col_Per,fill = Region))+
+  geom_boxplot(outlier.shape= NA,alpha = 0.7) +  
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  scale_fill_manual(values = c(
+    "Sub-Saharan Africa" = "#581209",
+    "Europe" = "#e31a1c",
+    "Asia" = "#CC5500",
+    "Americas" = "#e88d13",
+    "Middle East and North Africa" = "#e1a612",
+    "Oceania" = "orange",
+    "Former Soviet Union" = "#c34328")) +
+  labs(
+    title = "The Percentage of Vaccinated Children by Global Region",
+    x= "Region",y= NULL,
+  ) +theme_minimal(base_family = "serif")+
+    
+  theme(axis.text.x = element_text(angle = 20, hjust = 0.75), axis.text = element_text(size = 10,color = "black"), legend.position = "none"
+          )
+  })
+lowest_country <- reactive({
+  world_data_reactive() |>
+  filter(National_Results_Col_Per == min(National_Results_Col_Per, na.rm = TRUE)) |>
+    slice(1) |>
+    pull(Country)
+})
+  
+highest_country <- reactive({
+  world_data_reactive() |>
+    filter(National_Results_Col_Per == max(National_Results_Col_Per, na.rm = TRUE)) |>
+    slice(1) |>
+    pull(Country)
+})
+  
+output$lowest_country_box <- renderValueBox({
+  valueBox(
+    value = lowest_country(),
+    subtitle = "Country with Lowest Percentage of Vaccinated Children",
+    color = "orange"
+    )
+})
+  
+output$highest_country_box <- renderValueBox({
+  valueBox(
+    value = highest_country(),
+    subtitle = "Country with Highest Percentage of Vaccinated Children",
+    color = "orange"
+  )
+})
+
+output$data_2 <- renderTable({
+  filtered_data_2()
+})
+```
+
+
+### By Region
+```{r}
+
+plotOutput('boxplot')
+```
+
+## Column - lowest {.tabset}
+### Table
+
+```{r table}
+tableOutput('data_2')
+
+```
+
+### Numbers 
+
+#### 
+##### {height = 30%}
+```{r}
+
+valueBoxOutput("lowest_country_box")
+```
+##### metric {height = 70%}
+This metric identifies the country with the highest rate of reported children vaccinated of the regions selected.
+
+####
+##### metric {height = 70%}
+This metric identifies the country with the lowest rate of reported children vaccinated of the regions selected.
+
+##### {height = 30%}
+```{r}
+
+valueBoxOutput("highest_country_box")
+```
+
+
+
+
+# Belief in Vaccine Safety Statistics
+
+
+
+## Safety Plots 
 
 ### The Percentage of People who Believe Vaccines are Safe by Country
 
@@ -320,8 +366,16 @@ leafletOutput('map2')
 
 ```{r plot nat3}
 #| context: server
-#| title: The percentage of people who believe vaccines are safe by Country
-output$map2 <- renderLeaflet({leaflet(world_data2) |> addTiles() |>
+#title: The percentage of people who believe vaccines are safe by Country
+output$map2 <- renderLeaflet({
+    pal <- colorBin(
+  palette =c("#ffffd4", "#fec44f", "#fe9929", "#fc4e2a", "#b10026"),
+  #https://loading.io/color/feature/YlOrRd-8
+  domain = world_data$National_Results_Col_Per,
+  bins =c(0, 0.70, 0.80, 0.90, 0.95, 1.00), na.color ="#d3d3d3"  
+)
+    
+  leaflet(world_data2) |> addTiles() |>
   addPolygons(
     fillColor = ~pal(Agree_Percent), weight = 1,
     color = "white", fillOpacity = 0.8,
@@ -341,7 +395,7 @@ output$map2 <- renderLeaflet({leaflet(world_data2) |> addTiles() |>
 })
 ```
 
-### The Percentage of People who Believe Vaccines are Safe by Country
+### The Percentage of People who Believe Vaccines are Safe by Region
 ```{r}
 plotOutput('boxplot2')
 ```
@@ -368,56 +422,15 @@ output$boxplot2 <- renderPlot({ggplot(national3, aes(x = Region,y= Agree_Percent
   theme(axis.text.x = element_text(angle = 20, hjust = 0.75), axis.text = element_text(size = 10,color = "black"), legend.position = "none"
         )
 })
+output$data <- renderTable({
+  filtered_data_3()
+})
 ```
 
-```{r}
-#| context: setup
-#| label: calculate-vals for national3
-lowest_country <- national3 |>
-  filter(Agree_Percent == min(Agree_Percent, na.rm = FALSE)) |>
-  distinct(Country) |>
-  pull(Country)
 
-highest_country <- national3 |>
-  filter(Agree_Percent == max(Agree_Percent, na.rm = FALSE)) |>
-  distinct(Country) |>
-  pull(Country)
-
-
-```
-
-## Numbers {.tabset}
-
-### Lowest {height = 50%}
-
-```{r values2}
-#| context: server
-#| content: valuebox
-#| title: "Country with Lowest Belief in Vaccine Safety"
-#| color: danger
-list(
-  value = toupper(lowest_country)
-)
-```
-
-### Highest {height = 50%}
-
-```{r}
-#| context: server
-#| content: valuebox
-#| title: "Country with Highest Belief in Vaccine Safety"
-#| color: danger
-list(
-  value = toupper(highest_country)
-)
-```
-
+## Numbers 
 ### Countries with Highest Belief in Vaccine Safety
 
 ```{r}
-#| context: server
-national3 |>
-  select(Country, Region, Agree_Percent) |> mutate(Agree_Percent = scales::percent(Agree_Percent, accuracy = 1)) |>
-  arrange(desc(Agree_Percent)) |> head(10) |>
-  kable(col.names = c("Country", "Region", "% Believe Vaccines Are Safe"))
+tableOutput('data')
 ```
