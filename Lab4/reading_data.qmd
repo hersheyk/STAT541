@@ -1,0 +1,146 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r libraries}
+#| context: setup
+#| message: false
+
+if (!requireNamespace("rnaturalearthdata", quietly = TRUE)) {
+  install.packages("rnaturalearthdata")
+}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggrepel)
+library(scales)
+library(leaflet)
+library(knitr)
+library(rnaturalearth)
+library(sf)
+library(kableExtra)
+library(rnaturalearthdata)
+library(shinydashboard)
+
+```
+
+```{r read in data}
+#| context: setup
+#| message: false
+data<-read_excel("C:\\Users\\Geetha\\Downloads\\wgm2018-dataset-crosstabs-all-countries.xlsx")
+#head(data)
+```
+
+```{r subset data}
+#| context: setup
+#| message: false
+national <- data[c('...1', '...2', '...3', 'National results','...5')]
+colnames(national) <- c("Country", "Question", "Response", "National_Results_Col_Per", "National_Results_Count")
+
+national <- national[!(national$Country %in% c(NA, 'Country')),]
+#drop title row since renamed cols alr
+
+national$QNumber <- str_split_i(national$Question, " ", 1)
+#split to get question number
+```
+
+```{r name global region vectors}
+#| context: setup
+asia <- c('Afghanistan', 'Bangladesh', 'Cambodia', 'China', 'India', 'Indonesia', 'Japan', 'Laos', 'Malaysia', 'Mongolia', 'Myanmar', 'Nepal', 'Pakistan', 'Philippines', 'Singapore', 'South Korea', 'Sri Lanka', 'Taiwan', 'Thailand', 'Vietnam'
+)
+
+mena <- c('Algeria', 'Egypt', 'Iran', 'Iraq', 'Israel', 'Jordan', 'Kuwait', 'Lebanon','Libya', 'Morocco', 'Palestine', 'Saudi Arabia', 'Tunisia', 'United Arab Emirates', 'Yemen'
+)
+
+americas <- c('Argentina', 'Bolivia', 'Brazil', 'Canada', 'Chile', 'Colombia', 'Costa Rica', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Guatemala', "Haiti", 'Honduras','Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'United States', 'Uruguay', 'Venezuela'
+)
+
+sub_sahara <- c('Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon', 'Congo, Rep.','Comoros', 'Chad','Eswatini','Ethiopia', 'Gabon', 'Ghana', 'Guinea', 'Ivory Coast', 'Kenya', 'Liberia', 'Madagascar', 'Malawi', 'Mali', 'Mauritania', 'Mauritius','Mozambique', 'Namibia', 'Niger', 'Nigeria', 'Rwanda', 'Senegal','Sierra Leone', 'South Africa', 'Tanzania', 'The Gambia', 'Togo','Uganda', 'Zambia', 'Zimbabwe'
+)
+
+europe <- c('Albania', 'Austria', 'Belgium', 'Bosnia and Herzegovina', 'Bulgaria','Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Finland', 'France','Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy', 'Kosovo','Luxembourg', 'Macedonia', 'Malta', 'Netherlands', 'Norway', "Poland", 'Northern Cyprus', 'Montenegro', 'Portugal', 'Romania', 'Serbia', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Turkey', 'United Kingdom'
+)
+
+former_soviet <- c('Armenia', 'Azerbaijan', 'Belarus', 'Estonia', 'Georgia', 'Kazakhstan', 'Kyrgyzstan', 'Latvia', 'Lithuania', 'Moldova', 'Russia', 'Tajikistan', 'Ukraine', 'Uzbekistan', 'Turkmenistan'
+)
+
+oceania <- c('Australia', 'New Zealand')
+```
+
+```{r create nat2}
+#| context: setup
+#| message: false
+national2 <- national |>
+  fill(QNumber, .direction = "down") |>
+  #Source for .direction: https://tidyr.tidyverse.org/reference/fill.html
+  filter(QNumber == "Q28")|> filter(Response == "Yes") |> mutate(Region = case_when(
+    
+    Country %in% asia ~ "Asia",
+    Country %in% mena ~ "Middle East and North Africa",
+    Country %in% americas ~ "Americas",
+    Country %in% sub_sahara ~ "Sub-Saharan Africa",
+    Country %in% europe ~ "Europe",
+    Country %in% former_soviet ~ "Former Soviet Union",
+    Country %in% oceania ~ "Oceania",
+    
+    TRUE ~ "Other" #used to check, there are none that fall in this category
+  ))
+#head(national2)
+
+```
+
+```{r connect nat2 to world dataset and numeric}
+#| context: setup
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+world$Country <- tolower(world$name_long)
+national2$Country <- tolower(national2$Country)
+
+world_data <- left_join(world, national2, by = c("Country" = "Country"))
+world_data$National_Results_Col_Per <- as.numeric(world_data$National_Results_Col_Per)
+national2$National_Results_Col_Per <- as.numeric(national2$National_Results_Col_Per)
+
+```
+
+```{r nat3}
+#| context: setup
+national3 <- national |>
+  fill(QNumber, .direction = "down") |>
+  #Source for .direction: https://tidyr.tidyverse.org/reference/fill.html
+  filter(QNumber == "Q25")|> filter(Response %in% c("Strongly agree", "Somewhat agree")) |> group_by(Country) |> summarize(Agree_Percent = sum(as.numeric(National_Results_Col_Per)), .groups = "drop") |> mutate(Region = case_when(
+    
+    Country %in% asia ~ "Asia",
+    Country %in% mena ~ "Middle East and North Africa",
+    Country %in% americas ~ "Americas",
+    Country %in% sub_sahara ~ "Sub-Saharan Africa",
+    Country %in% europe ~ "Europe",
+    Country %in% former_soviet ~ "Former Soviet Union",
+    Country %in% oceania ~ "Oceania",
+    
+    TRUE ~ "Other" #used to check, there are none that fall in this category
+  ))
+```
+
+```{r nat3 to world}
+#| context: server
+world <- ne_countries(scale = "medium", returnclass = "sf")
+world$Country <- tolower(world$name_long)
+national3$Country <- tolower(national3$Country)
+
+world_data2 <- left_join(world, national3, by = c("Country" = "Country"))
+world_data2$National_Results_Col_Per <- as.numeric(world_data$National_Results_Col_Per)
+
+
+```
+
+```{r}
+write_csv(national2, "children_vaccinated.csv")
+
+write_csv(national3, "vaccine_safety_top_countries.csv")
+
+write_csv(world_data, "world_child_vax.csv")
+write_csv(world_data2, "world_vax_safe.csv")
+```

@@ -1,0 +1,145 @@
+Country,Agree_Percent,Region
+afghanistan,0.9423702013900543,Asia
+albania,0.6383839730124001,Europe
+algeria,0.630204769898109,Middle East and North Africa
+argentina,0.8767938958595356,Americas
+armenia,0.42016421814081034,Former Soviet Union
+australia,0.8332962560295303,Oceania
+austria,0.548592406123656,Europe
+azerbaijan,0.6339330828609149,Former Soviet Union
+bangladesh,0.9790823204146358,Asia
+belarus,0.3631982502368123,Former Soviet Union
+belgium,0.6271028787957234,Europe
+benin,0.8180269815896852,Sub-Saharan Africa
+bolivia,0.7419606175753176,Americas
+bosnia and herzegovina,0.7028352916792995,Europe
+botswana,0.7941785941657024,Sub-Saharan Africa
+brazil,0.7998103720482848,Americas
+bulgaria,0.3954659856964611,Europe
+burkina faso,0.6802213453222018,Sub-Saharan Africa
+burundi,0.8751567521358754,Sub-Saharan Africa
+cambodia,0.876030280929837,Asia
+cameroon,0.77104957073413,Sub-Saharan Africa
+canada,0.7643792008783675,Americas
+chad,0.8113775922364721,Sub-Saharan Africa
+chile,0.7419019875463864,Americas
+china,0.7229322724241933,Asia
+colombia,0.8194123131090988,Americas
+comoros,0.8925248139992082,Sub-Saharan Africa
+"congo, rep.",0.751463029310277,Sub-Saharan Africa
+costa rica,0.8636932242108252,Americas
+croatia,0.5677457913838703,Europe
+cyprus,0.621991964541309,Europe
+czech republic,0.6404283543664014,Europe
+denmark,0.6977371729818083,Europe
+dominican republic,0.8944088704882527,Americas
+ecuador,0.8587054365144184,Americas
+egypt,0.9715369230199258,Middle East and North Africa
+el salvador,0.7796172391992084,Americas
+estonia,0.5021347152519056,Former Soviet Union
+eswatini,0.7558018850987722,Sub-Saharan Africa
+ethiopia,0.961275399818322,Sub-Saharan Africa
+finland,0.7284051343222542,Europe
+france,0.47036260050995615,Europe
+gabon,0.6264785774529134,Sub-Saharan Africa
+georgia,0.694996618526878,Former Soviet Union
+germany,0.6715740011138055,Europe
+ghana,0.8718449313993951,Sub-Saharan Africa
+greece,0.7851626393703378,Europe
+guatemala,0.8726356487634085,Americas
+guinea,0.7828265399096267,Sub-Saharan Africa
+haiti,0.7162930719227174,Americas
+honduras,0.8917671284669678,Americas
+hungary,0.7669854953414537,Europe
+iceland,0.606767277115234,Europe
+india,0.9544130778372519,Asia
+indonesia,0.8350510670750568,Asia
+iran,0.6851595654915216,Middle East and North Africa
+iraq,0.8996511468177435,Middle East and North Africa
+ireland,0.7345047239601956,Europe
+israel,0.7558244767114192,Middle East and North Africa
+italy,0.7569166718705529,Europe
+ivory coast,0.7695228842604246,Sub-Saharan Africa
+japan,0.3399302620533886,Asia
+jordan,0.9198920648209588,Middle East and North Africa
+kazakhstan,0.4571756253160751,Former Soviet Union
+kenya,0.8923351746424262,Sub-Saharan Africa
+kosovo,0.7126989888128604,Europe
+kuwait,0.8685452771074339,Middle East and North Africa
+kyrgyzstan,0.6783130848890405,Former Soviet Union
+laos,0.9238492746458074,Asia
+latvia,0.4545748506299581,Former Soviet Union
+lebanon,0.8369318336792787,Middle East and North Africa
+liberia,0.9601272648630654,Sub-Saharan Africa
+libya,0.7392569378005135,Middle East and North Africa
+lithuania,0.5237598497476371,Former Soviet Union
+luxembourg,0.7082599285437224,Europe
+macedonia,0.5361418004273041,Europe
+madagascar,0.8537612575844635,Sub-Saharan Africa
+malawi,0.9173364064288609,Sub-Saharan Africa
+malaysia,0.9089023357863647,Asia
+mali,0.6550021114178353,Sub-Saharan Africa
+malta,0.7949439766129287,Europe
+mauritania,0.7421991728078315,Sub-Saharan Africa
+mauritius,0.6293665163535612,Sub-Saharan Africa
+mexico,0.8897181011185947,Americas
+moldova,0.44338382834558665,Former Soviet Union
+mongolia,0.7443747462324681,Asia
+montenegro,0.4435211798409122,Europe
+morocco,0.7986947394213185,Middle East and North Africa
+mozambique,0.9118510944467804,Sub-Saharan Africa
+myanmar,0.9149710827368016,Asia
+namibia,0.8354229489825749,Sub-Saharan Africa
+nepal,0.9211685934424472,Asia
+netherlands,0.6763927552180102,Europe
+new zealand,0.7210683775160289,Oceania
+nicaragua,0.928753492209603,Americas
+niger,0.8676437259159018,Sub-Saharan Africa
+nigeria,0.9114849162612723,Sub-Saharan Africa
+northern cyprus,0.8754796098635004,Europe
+norway,0.8320643863882926,Europe
+pakistan,0.8746708615328552,Asia
+palestine,0.9082341117983321,Middle East and North Africa
+panama,0.8701179180461405,Americas
+paraguay,0.7771853638598835,Americas
+peru,0.7020276962283174,Americas
+philippines,0.7873598855708961,Asia
+poland,0.7759000687589991,Europe
+portugal,0.8076637384222118,Europe
+romania,0.6521081461358071,Europe
+russia,0.4463316828097059,Former Soviet Union
+rwanda,0.9353981408011192,Sub-Saharan Africa
+saudi arabia,0.8451071615659518,Middle East and North Africa
+senegal,0.733648279178559,Sub-Saharan Africa
+serbia,0.6595616366626826,Europe
+sierra leone,0.9275960826817952,Sub-Saharan Africa
+singapore,0.7619201144970944,Asia
+slovakia,0.7324740637029271,Europe
+slovenia,0.7026216267071237,Europe
+south africa,0.8231987859786722,Sub-Saharan Africa
+south korea,0.4865487800769757,Asia
+spain,0.7964759426207985,Europe
+sri lanka,0.8648181964306899,Asia
+sweden,0.6984934992582077,Europe
+switzerland,0.5264549204053768,Europe
+taiwan,0.5660420010968811,Asia
+tajikistan,0.9132556177285437,Former Soviet Union
+tanzania,0.9553248557705468,Sub-Saharan Africa
+thailand,0.9258005103790817,Asia
+the gambia,0.8750210734310425,Sub-Saharan Africa
+togo,0.5116570541773132,Sub-Saharan Africa
+tunisia,0.772538258435147,Middle East and North Africa
+turkey,0.8179293168301862,Europe
+turkmenistan,0.8572975255752376,Former Soviet Union
+uganda,0.855233669479714,Sub-Saharan Africa
+ukraine,0.2928529389888846,Former Soviet Union
+united arab emirates,0.8358233724005042,Middle East and North Africa
+united kingdom,0.7515199259727092,Europe
+united states,0.7209093656899119,Americas
+uruguay,0.7239453213121861,Americas
+uzbekistan,0.9234588999880313,Former Soviet Union
+venezuela,0.9222134241769857,Americas
+vietnam,0.7084443302196088,Asia
+yemen,0.8421886744738257,Middle East and North Africa
+zambia,0.8054475526699446,Sub-Saharan Africa
+zimbabwe,0.8514194335951919,Sub-Saharan Africa
