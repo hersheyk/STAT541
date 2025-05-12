@@ -8,6 +8,7 @@ editor: visual
 # Lab 6 - Spicier
 
 ```{r set up}
+#|: message: false
 library(tidyverse)
 library(dplyr)
 diamonds<- ggplot2::diamonds
@@ -33,8 +34,9 @@ remove_outliers<- function(data, ... , sd_threshold = 3){
   
   for(each in variables){
     if (!is.numeric(data[[each]])) {
-      stop(paste("Variable", each
-                 , "is not numeric! Only numeric variables are supported!"))
+      warning(paste("Variable", each
+                 , "is not numeric! Only numeric variables are supported! We cannot drop outliers from this column"))
+      next
       # returns error for non-numeric variables
     }
     
@@ -53,6 +55,8 @@ remove_outliers<- function(data, ... , sd_threshold = 3){
 
 # [[]] vs [] https://stackoverflow.com/questions/1169456/the-difference-between-bracket-and-double-bracket-for-accessing-the-el
 ```
+
+This function is not the most efficient as it does use a for loop.
 
 #### Testing Your Function
 
@@ -91,16 +95,27 @@ Write a function that imputes missing values for numeric variables in a dataset.
 
 ```{r}
 impute_missing <- function( data, ..., func = sum){
-  # capture unquoted variable names
-  vars <- enquos(...)  
+  # capture variable names
+  variables <- as.character(substitute(list(...)))[-1]
   
-  data %>%
+   #issues a warning for non-numeric variables and retains them in the dataset without imputing
+  numeric_variables <- variables[sapply(variables, function(x) is.numeric(data[[x]]))]
+  
+  non_numeric_vars <- setdiff(variables, numeric_variables)
+  
+  if(length(non_numeric_vars) > 0) {
+    warning(paste("The following variables are non-numeric and will not be imputed:", paste(non_numeric_vars, collapse = ", ")))
+  }
+  
+  data |>
     mutate(across(
-      .cols = !!!vars,
+      .cols = all_of(numeric_variables),
       .fns = ~ replace_na(.x, func(.x, na.rm = TRUE))
     ))
 }
 ```
+
+This function is more efficient than the last one as it uses `sapply()` and the usage of dplyr makes this function more efficient than the last one.
 
 #### Testing Your Function
 
@@ -138,6 +153,26 @@ Write a `fit_model()` function that fits a specified linear regression model for
 -   allow the user to specify if missing observations should be imputed (`TRUE` or `FALSE`)
 
 If either option is `TRUE`, your function should call your `remove_outliers()` or `impute_missing()` functions to modify the data **before** the regression model is fit.
+
+```{r}
+fit_model <- function(data, mod_formula, remove_outliers = FALSE, impute_missing = FALSE, ...) {
+  
+  #run helper functions if indicated
+  if (remove_outliers) {
+    data <- remove_outliers(data, ...)
+  }
+  
+  if (impute_missing) {
+    data <- impute_missing(data, ...)
+  }
+  
+  #fit the linear regression model
+  model <- lm(mod_formula, data = data)
+  
+  # Return the fitted model
+  return(model)
+}
+```
 
 #### Test Your Function
 
@@ -186,6 +221,45 @@ df_arg_combos
 
 Use `crossing()` to create the data frame of argument combinations for our analyses.
 
+```{r}
+param_sets <- crossing(
+  impute = c(TRUE, FALSE),                           
+  remove_outliers = c(TRUE, FALSE),                   
+  mod = c(                                        
+    price ~ carat,   # No adjustment    
+    
+    price ~ carat + cut,                             
+    price ~ carat + cut + clarity,     
+    
+    # Adjusting for cut, clarity, and color
+    price ~ carat + cut + clarity + color            
+  )
+)
+param_sets
+```
+
 ## Exercise 5: Iterating Over Parameters
 
 Use `pmap()` from `purrr` to apply the `fit_model()` function to every combination of arguments from `diamonds.`
+
+```{r}
+param_sets<-param_sets |>
+  mutate(model = pmap(list(impute, remove_outliers, mod), 
+                      function(impute, remove_outliers, mod) {
+                        fit_model(
+                          data = diamonds,
+                          mod_formula = mod,
+                          remove_outliers = remove_outliers,
+                          impute_missing = impute,
+                          price,
+                          carat
+                          # variable to use for outlier removal and imputation
+                          # variables cut, clarity and color are non-numeric
+                        )
+                      }))
+
+```
+
+```{r}
+print(param_sets$model)
+```
